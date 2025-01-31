@@ -32,8 +32,6 @@ class Book {
     public void returnBook() {
         isIssued = false;
     }
-
-    @Override
     public String toString() {
         return title + " by " + author + " (ISBN: " + isbn + ")";
     }
@@ -55,8 +53,6 @@ class User {
     public String getUserId() {
         return userId;
     }
-
-    @Override
     public String toString() {
         return name + " (User ID: " + userId + ")";
     }
