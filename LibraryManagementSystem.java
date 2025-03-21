@@ -1,117 +1,82 @@
 import java.util.*;
 
 class Book {
-    private String title;
-    private String author;
-    private String isbn;
-    private boolean isIssued;
+    String title, isbn;
+    boolean isIssued;
 
-    public Book(String title, String author, String isbn) {
+    public Book(String title, String isbn) {
         this.title = title;
-        this.author = author;
         this.isbn = isbn;
         this.isIssued = false;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getIsbn() {
-        return isbn;
-    }
-
-    public boolean isIssued() {
-        return isIssued;
-    }
-
-    public void issueBook() {
-        isIssued = true;
-    }
-
-    public void returnBook() {
-        isIssued = false;
-    }
-    public String toString() {
-        return title + " by " + author + " (ISBN: " + isbn + ")";
     }
 }
 
 class User {
-    private String name;
-    private String userId;
+    String name;
 
-    public User(String name, String userId) {
+    public User(String name) {
         this.name = name;
-        this.userId = userId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-    public String toString() {
-        return name + " (User ID: " + userId + ")";
     }
 }
 
 class Library {
-    private List<Book> books;
-    private Map<String, String> issuedBooks;
+    Map<String, User> users = new HashMap<>();
+    Map<String, Book> books = new HashMap<>();
+    Map<String, String> issuedBooks = new HashMap<>();
 
-    public Library() {
-        this.books = new ArrayList<>();
-        this.issuedBooks = new HashMap<>();
-    }
-
-    public void addBook(Book book) {
-        books.add(book);
-        System.out.println("Book added: " + book);
-    }
-
-    public void removeBook(String isbn) {
-        books.removeIf(book -> book.getIsbn().equals(isbn));
-        issuedBooks.remove(isbn);
-        System.out.println("Book with ISBN " + isbn + " removed.");
-    }
-
-    public void issueBook(String isbn, User user) {
-        for (Book book : books) {
-            if (book.getIsbn().equals(isbn) && !book.isIssued()) {
-                book.issueBook();
-                issuedBooks.put(isbn, user.getUserId());
-                System.out.println(user.getName() + " issued " + book.getTitle());
-                return;
-            }
-        }
-        System.out.println("Book not available for issue.");
-    }
-
-    public void returnBook(String isbn, User user) {
-        if (issuedBooks.containsKey(isbn) && issuedBooks.get(isbn).equals(user.getUserId())) {
-            for (Book book : books) {
-                if (book.getIsbn().equals(isbn)) {
-                    book.returnBook();
-                    issuedBooks.remove(isbn);
-                    System.out.println(user.getName() + " returned " + book.getTitle());
-                    return;
-                }
-            }
-        }
-        System.out.println("Invalid return attempt.");
-    }
-
-    public void displayBooks() {
-        if (books.isEmpty()) {
-            System.out.println("No books in the library.");
+    void addUser(String name) {
+        if (users.containsKey(name)) {
+            System.out.println("User already exists!");
         } else {
-            System.out.println("Books available in the library:");
-            for (Book book : books) {
-                System.out.println(book + (book.isIssued() ? " [Issued]" : " [Available]"));
-            }
+            users.put(name, new User(name));
+            System.out.println("User " + name + " registered.");
+        }
+    }
+
+    void addBook(String title, String isbn) {
+        if (books.containsKey(isbn)) {
+            System.out.println("Book with this ISBN already exists!");
+        } else {
+            books.put(isbn, new Book(title, isbn));
+            System.out.println("Book added: " + title);
+        }
+    }
+
+    void issueBook(String isbn, String user) {
+        if (!users.containsKey(user)) {
+            System.out.println("User not registered!");
+            return;
+        }
+        if (!books.containsKey(isbn)) {
+            System.out.println("Book not found!");
+            return;
+        }
+        if (books.get(isbn).isIssued) {
+            System.out.println("Book already issued!");
+            return;
+        }
+        books.get(isbn).isIssued = true;
+        issuedBooks.put(isbn, user);
+        System.out.println("Book issued to " + user);
+    }
+
+    void returnBook(String isbn, String user) {
+        if (!issuedBooks.containsKey(isbn) || !issuedBooks.get(isbn).equals(user)) {
+            System.out.println("Book not issued to you!");
+            return;
+        }
+        books.get(isbn).isIssued = false;
+        issuedBooks.remove(isbn);
+        System.out.println("Book returned by " + user);
+    }
+
+    void displayBooks() {
+        if (books.isEmpty()) {
+            System.out.println("No books in library.");
+            return;
+        }
+        for (Book book : books.values()) {
+            System.out.println(book.title + " (ISBN: " + book.isbn + ") - " + (book.isIssued ? "Issued" : "Available"));
         }
     }
 }
@@ -120,78 +85,48 @@ public class LibraryManagementSystem {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         Library library = new Library();
-        User user1 = new User("Swathi", "U001");
-        User user2 = new User("Kaviya", "U002");
 
         while (true) {
-            System.out.println("\nLibrary Management System");
-            System.out.println("1. Add Book");
-            System.out.println("2. Remove Book");
-            System.out.println("3. Issue Book");
-            System.out.println("4. Return Book");
-            System.out.println("5. Display Books");
-            System.out.println("6. Exit");
-            System.out.print("Enter your choice: ");
+            System.out.println("\n1. Register User\n2. Add Book\n3. Issue Book\n4. Return Book\n5. Display Books\n6. Exit");
+            System.out.print("Enter choice: ");
             int choice = scanner.nextInt();
-            scanner.nextLine();  // Consume newline character
+            scanner.nextLine(); 
 
             switch (choice) {
                 case 1:
+                    System.out.print("Enter username: ");
+                    String name = scanner.nextLine();
+                    library.addUser(name);
+                    break;
+                case 2:
                     System.out.print("Enter book title: ");
                     String title = scanner.nextLine();
-                    System.out.print("Enter author: ");
-                    String author = scanner.nextLine();
                     System.out.print("Enter ISBN: ");
                     String isbn = scanner.nextLine();
-                    Book newBook = new Book(title, author, isbn);
-                    library.addBook(newBook);
+                    library.addBook(title, isbn);
                     break;
-
-                case 2:
-                    System.out.print("Enter ISBN of book to remove: ");
-                    String removeIsbn = scanner.nextLine();
-                    library.removeBook(removeIsbn);
-                    break;
-
                 case 3:
-                    System.out.print("Enter ISBN of book to issue: ");
+                    System.out.print("Enter ISBN: ");
                     String issueIsbn = scanner.nextLine();
-                    System.out.print("Enter user ID: ");
-                    String userId = scanner.nextLine();
-                    if (userId.equals(user1.getUserId())) {
-                        library.issueBook(issueIsbn, user1);
-                    } else if (userId.equals(user2.getUserId())) {
-                        library.issueBook(issueIsbn, user2);
-                    } else {
-                        System.out.println("Invalid user ID");
-                    }
+                    System.out.print("Enter username: ");
+                    String user = scanner.nextLine();
+                    library.issueBook(issueIsbn, user);
                     break;
-
                 case 4:
-                    System.out.print("Enter ISBN of book to return: ");
+                    System.out.print("Enter ISBN: ");
                     String returnIsbn = scanner.nextLine();
-                    System.out.print("Enter user ID: ");
-                    String returnUserId = scanner.nextLine();
-                    if (returnUserId.equals(user1.getUserId())) {
-                        library.returnBook(returnIsbn, user1);
-                    } else if (returnUserId.equals(user2.getUserId())) {
-                        library.returnBook(returnIsbn, user2);
-                    } else {
-                        System.out.println("Invalid user ID");
-                    }
+                    System.out.print("Enter username: ");
+                    String returnUser = scanner.nextLine();
+                    library.returnBook(returnIsbn, returnUser);
                     break;
-
                 case 5:
                     library.displayBooks();
                     break;
-
                 case 6:
                     System.out.println("Exiting...");
-                    scanner.close();
                     return;
-
                 default:
-                    System.out.println("Invalid choice. Try again.");
+                    System.out.println("Invalid choice!");
             }
         }
     }
