@@ -25,10 +25,10 @@ class Library {
     Map<String, String> issuedBooks = new HashMap<>();
 
     void addUser(String name) {
-        if (users.containsKey(name)) {
+        if (users.containsKey(name.toLowerCase())) {
             System.out.println("User already exists!");
         } else {
-            users.put(name, new User(name));
+            users.put(name.toLowerCase(), new User(name));
             System.out.println("User " + name + " registered.");
         }
     }
@@ -43,6 +43,7 @@ class Library {
     }
 
     void issueBook(String isbn, String user) {
+        user = user.toLowerCase();
         if (!users.containsKey(user)) {
             System.out.println("User not registered!");
             return;
@@ -57,17 +58,18 @@ class Library {
         }
         books.get(isbn).isIssued = true;
         issuedBooks.put(isbn, user);
-        System.out.println("Book issued to " + user);
+        System.out.println("Book issued to " + users.get(user).name);
     }
 
     void returnBook(String isbn, String user) {
+        user = user.toLowerCase();
         if (!issuedBooks.containsKey(isbn) || !issuedBooks.get(isbn).equals(user)) {
             System.out.println("Book not issued to you!");
             return;
         }
         books.get(isbn).isIssued = false;
         issuedBooks.remove(isbn);
-        System.out.println("Book returned by " + user);
+        System.out.println("Book returned by " + users.get(user).name);
     }
 
     void displayBooks() {
@@ -79,6 +81,16 @@ class Library {
             System.out.println(book.title + " (ISBN: " + book.isbn + ") - " + (book.isIssued ? "Issued" : "Available"));
         }
     }
+
+    // Case-insensitive book search
+    Book findBookByTitle(String title) {
+        for (Book book : books.values()) {
+            if (book.title.equalsIgnoreCase(title)) {
+                return book;
+            }
+        }
+        return null;
+    }
 }
 
 public class LibraryManagementSystem {
@@ -87,10 +99,10 @@ public class LibraryManagementSystem {
         Library library = new Library();
 
         while (true) {
-            System.out.println("\n1. Register User\n2. Add Book\n3. Issue Book\n4. Return Book\n5. Display Books\n6. Exit");
+            System.out.println("\n1. Register User\n2. Add Book\n3. Issue Book\n4. Return Book\n5. Display Books\n6. Search Book\n7. Exit");
             System.out.print("Enter choice: ");
             int choice = scanner.nextInt();
-            scanner.nextLine(); 
+            scanner.nextLine();
 
             switch (choice) {
                 case 1:
@@ -123,6 +135,16 @@ public class LibraryManagementSystem {
                     library.displayBooks();
                     break;
                 case 6:
+                    System.out.print("Enter book title: ");
+                    String searchTitle = scanner.nextLine();
+                    Book foundBook = library.findBookByTitle(searchTitle);
+                    if (foundBook != null) {
+                        System.out.println("Book found: " + foundBook.title + " (ISBN: " + foundBook.isbn + ") - " + (foundBook.isIssued ? "Issued" : "Available"));
+                    } else {
+                        System.out.println("Book not found!");
+                    }
+                    break;
+                case 7:
                     System.out.println("Exiting...");
                     return;
                 default:
